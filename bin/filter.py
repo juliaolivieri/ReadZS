@@ -64,7 +64,9 @@ def pass_filter_lenient(read):
         return True
 
 def has_barcode_tags(read):
-    if read.has_tag("CB") and read.has_tag("UB"):
+
+    # slideseq barcode/UMI tags are XC and XM; for 10X they're CB and UB
+    if (read.has_tag("CB") and read.has_tag("UB")) or (read.has_tag("XC") and read.has_tag("XM")):
         return True
 
 def get_read_info(read, bam_file, isCellranger):
@@ -83,8 +85,14 @@ def get_SICILIAN_outs(read):
     return (cbc, umi)
 
 def get_cellranger_outs(read):
-    cbc = read.get_tag("CB").replace("-1", "")
-    umi = read.get_tag("UB")
+
+    # get UMI and barcode (different tags for 10X and Slide-seq)
+    try:
+        cbc = read.get_tag("CB").replace("-1", "")
+        umi = read.get_tag("UB")
+    except:
+        cbc = read.get_tag("XC").replace("-1", "")
+        umi = read.get_tag("XM")
     return (cbc, umi)
 
 def write_out_10X(cbc, umi, strand, chr, position, inputChannel, plus, minus):
@@ -153,7 +161,7 @@ def main():
 
     bam_file = pysam.AlignmentFile(args.input_bam)
 
-    if libType == "10X":
+    if libType in ["10X","SLS"]:
         if isCellranger:
             if "chr" not in args.chr:
                 chrName = "chr" + args.chr

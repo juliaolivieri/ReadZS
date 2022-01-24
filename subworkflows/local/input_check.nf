@@ -15,9 +15,9 @@ workflow INPUT_CHECK {
             exit 1, "Invalid parameter input. SS2 data should have `isCellranger = false`."
         }
     }
-    if (params.libType == '10X') {
+    if ((params.libType == '10X') | (params.libType == "SLS")) {
         if (!params.isCellranger && !params.isSICILIAN) {
-            exit 1, "Invalid parameter input. 10X data must either by cellranger or SICILIAN output."
+            exit 1, "Invalid parameter input. 10X and Slide-seq data must either by cellranger or SICILIAN output."
         }
     }
     if (params.plot_only && params.skip_plot) {
